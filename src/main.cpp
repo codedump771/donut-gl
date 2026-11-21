@@ -1,10 +1,12 @@
 #include <glad/gl.h>
 #include <SDL3/SDL.h>
 #include <print>
+#include <vector>
+#include <cmath>
+#include "shader.hpp"
 
 struct Vertex {
-    float x, y, z;
-    float r, g, b;
+    float x, y;
 };
 
 int main() {
@@ -49,6 +51,29 @@ int main() {
     uint32_t vao, vbo;
     glCreateVertexArrays(1, &vao);
     glCreateBuffers(1, &vbo);
+
+    Vertex vertices[] {
+        {0.0f, 0.5f},
+        {-0.5f, -0.5f},
+        {0.5f, -0.5f}
+    };
+
+    glNamedBufferStorage(vbo, 3 * sizeof(Vertex), vertices, 0);
+    glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
+    glEnableVertexArrayAttrib(vao, 0);
+    glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayAttribBinding(vao, 0, 0);
+    glBindVertexArray(vao);
+
+    Shader program;
+    program.add_shader(GL_VERTEX_SHADER, "./shaders/circle.vert");
+    program.add_shader(GL_FRAGMENT_SHADER, "./shaders/circle.frag");
+    auto program_id = program.compile();
+    if (!program_id) {
+        std::exit(1);
+    }
+
+    glUseProgram(*program_id);
     
     bool running{true};
 
@@ -59,9 +84,11 @@ int main() {
                 running = false;
             }
         }
-
-        glClearColor(0.7f, 0.9f, 0.1f, 1.0f);
+        
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         SDL_GL_SwapWindow(window);
     }
