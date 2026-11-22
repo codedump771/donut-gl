@@ -35,6 +35,10 @@ public:
         id_(glCreateProgram()),
         shaders_{shaders}
         {}
+
+    ShaderProgram(const ShaderProgram&) = delete;
+    ShaderProgram& operator=(const ShaderProgram&) = delete;
+        
     ~ShaderProgram() { glDeleteProgram(id_); }
     
     std::optional<uint32_t> compile();
