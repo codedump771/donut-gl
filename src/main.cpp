@@ -1,8 +1,6 @@
 #include <glad/gl.h>
 #include <SDL3/SDL.h>
 #include <print>
-#include <vector>
-#include <cmath>
 #include "shader.hpp"
 
 struct Vertex {
@@ -65,10 +63,11 @@ int main() {
     glVertexArrayAttribBinding(vao, 0, 0);
     glBindVertexArray(vao);
 
-    Shader program;
-    program.add_shader(GL_VERTEX_SHADER, "./shaders/circle.vert");
-    program.add_shader(GL_FRAGMENT_SHADER, "./shaders/circle.frag");
-    auto program_id = program.compile();
+    Shaders shaders { {GL_VERTEX_SHADER, "./shaders/circle.vert"}, {GL_FRAGMENT_SHADER, "./shaders/circle.frag"} };
+    ShaderProgram program {std::move(shaders)};
+
+    std::optional<uint32_t> program_id = program.compile();
+
     if (!program_id) {
         std::exit(1);
     }
