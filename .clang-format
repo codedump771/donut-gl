@@ -1,4 +1,6 @@
-BasedOnStyle: Google
-OffsetModifiers: -4
-TabWidth: 4
-UseTab: Always
+BasedOnStyle: webkit
+IndentWidth: 4
+UseTab: Never
+ColumnLimit: 0
+BreakBeforeBraces: Attach
+AccesModifierOffset: -4

@@ -27,7 +27,7 @@ FetchContent_MakeAvailable(SDL3)
 
 find_package(OpenGL REQUIRED)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/shader.cpp src/io.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/shader_program.cpp src/io.cpp)
 
 set(GLAD_SOURCE_DIR extern/glad/src)
 set(GLAD_INCLUDE_DIR extern/glad/include)

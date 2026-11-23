@@ -1,4 +1,4 @@
-#include "shader.hpp"
+#include "shader_program.hpp"
 
 #include "io.hpp"
 #include <SDL3/SDL.h>

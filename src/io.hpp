@@ -1,5 +1,5 @@
 // Input-Output utilities
-// 
+
 #pragma once
 
 #include <string>
