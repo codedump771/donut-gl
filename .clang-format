@@ -1,6 +1,10 @@
-BasedOnStyle: webkit
+BasedOnStyle: WebKit
 IndentWidth: 4
+TabWidth: 4
 UseTab: Never
 ColumnLimit: 0
 BreakBeforeBraces: Attach
-AccesModifierOffset: -4
+AccessModifierOffset: -4
+PointerAlignment: Right
+DerivePointerAlignment: false
+SpaceAfterCStyleCast: true

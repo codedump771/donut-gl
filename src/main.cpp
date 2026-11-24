@@ -1,7 +1,8 @@
-#include <glad/gl.h>
-#include <SDL3/SDL.h>
-#include <print>
 #include "shader_program.hpp"
+#include <SDL3/SDL.h>
+#include <glm/glm.hpp>
+#include <glad/gl.h>
+#include <print>
 
 struct Vertex {
     float x, y;
@@ -12,18 +13,17 @@ int main() {
         std::println(stderr, "[ERROR] {}", SDL_GetError());
         return 1;
     }
-    
+
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    SDL_Window* window = SDL_CreateWindow(
+    SDL_Window *window = SDL_CreateWindow(
         "Donut",
         1200,
         800,
-        SDL_WINDOW_OPENGL
-    );
+        SDL_WINDOW_OPENGL);
 
     if (!window) {
         std::println(stderr, "[ERROR] {}", SDL_GetError());
@@ -40,8 +40,8 @@ int main() {
     }
 
     int version = gladLoadGL((GLADloadfunc) SDL_GL_GetProcAddress);
-    if (version) {    
-        std::println("OpenGL {}.{} succesfuly loaded", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));    
+    if (version) {
+        std::println("OpenGL {}.{} succesfuly loaded", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
     } else {
         std::println(stderr, "[ERROR] OpenGL failed loading");
     }
@@ -51,11 +51,11 @@ int main() {
     glCreateBuffers(1, &vbo);
 
     Vertex vertices[] {
-        {0.0f, 0.5f},
-        {-0.5f, -0.5f},
-        {0.5f, -0.5f}
+        { 0.0f, 0.5f },
+        { -0.5f, -0.5f },
+        { 0.5f, -0.5f }
     };
-
+    
     glNamedBufferStorage(vbo, 3 * sizeof(Vertex), vertices, 0);
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
     glEnableVertexArrayAttrib(vao, 0);
@@ -64,19 +64,17 @@ int main() {
     glBindVertexArray(vao);
 
     Shaders shaders;
-    shaders.emplace_back(GL_VERTEX_SHADER, "./shaders/circle.vert");
-    shaders.emplace_back(GL_FRAGMENT_SHADER, "./shaders/circle.frag");
-    ShaderProgram program {shaders};
-
-    std::optional<uint32_t> program_id = program.compile();
-
-    if (!program_id) {
+    shaders.emplace_back(GL_VERTEX_SHADER, "./shaders/shader.vert");
+    shaders.emplace_back(GL_FRAGMENT_SHADER, "./shaders/shader.frag");
+    ShaderProgram program { shaders };
+    
+    if (!program.compile()) {
         std::exit(1);
     }
 
-    glUseProgram(*program_id);
-    
-    bool running{true};
+    program.use();
+
+    bool running { true };
 
     while (running) {
         SDL_Event event;
@@ -85,7 +83,7 @@ int main() {
                 running = false;
             }
         }
-        
+
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 

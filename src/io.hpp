@@ -6,6 +6,6 @@
 
 namespace io {
 
-std::string load_file(const std::string& dir);
-    
+std::string load_file(const std::string &dir);
+
 }

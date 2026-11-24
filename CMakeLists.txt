@@ -11,8 +11,7 @@ set(CMAKE_BUILD_TYPE Release)
 
 include(FetchContent)
 
-FetchContent_Declare(
-    SDL3
+FetchContent_Declare( SDL3  
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
     GIT_TAG release-3.2.26
     GIT_SHALLOW TRUE
@@ -25,14 +24,33 @@ set(SDL_STATIC OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(SDL3)
 
+FetchContent_Declare( glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git    
+    GIT_TAG 1.0.3
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(glm)
+
 find_package(OpenGL REQUIRED)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/shader_program.cpp src/io.cpp)
+set(SOURCES 
+    src/main.cpp
+    src/io.cpp
+    src/shader_program.cpp
+)
+
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 set(GLAD_SOURCE_DIR extern/glad/src)
 set(GLAD_INCLUDE_DIR extern/glad/include)
 add_library(glad STATIC ${GLAD_SOURCE_DIR}/gl.c)
 target_include_directories(glad PUBLIC ${GLAD_INCLUDE_DIR})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 OpenGL::GL glad)
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+    SDL3::SDL3
+    glm::glm 
+    OpenGL::GL 
+    glad 
+)
 
