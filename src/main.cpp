@@ -1,11 +1,16 @@
 #include "shader_program.hpp"
 #include <SDL3/SDL.h>
-#include <glm/glm.hpp>
 #include <glad/gl.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <iterator>
 #include <print>
 
+
 struct Vertex {
-    float x, y;
+    float x, y, z;
 };
 
 int main() {
@@ -18,10 +23,11 @@ int main() {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     SDL_Window *window = SDL_CreateWindow(
         "Donut",
-        1200,
+        800,
         800,
         SDL_WINDOW_OPENGL);
 
@@ -51,15 +57,18 @@ int main() {
     glCreateBuffers(1, &vbo);
 
     Vertex vertices[] {
-        { 0.0f, 0.5f },
-        { -0.5f, -0.5f },
-        { 0.5f, -0.5f }
+        {-0.5f, -0.5f, -0.5f}, {0.5f, -0.5f, -0.5f}, {0.0f, 0.5f, 0.0f},
+        {0.5f, -0.5f, -0.5f}, {0.5f, -0.5f, 0.5f}, {0.0f, 0.5f, 0.0f},
+        {0.5f, -0.5f, 0.5f}, {-0.5f, -0.5f, 0.5f}, {0.0f, 0.5f, 0.0f},
+        {-0.5f, -0.5f, 0.5f}, {-0.5f, -0.5f, -0.5f}, {0.0f, 0.5f, 0.0f},
+        {-0.5f, -0.5f, -0.5f}, {-0.5f, -0.5f, 0.5f}, {0.5f, -0.5f, 0.5f},
+        {-0.5f, -0.5f, -0.5f}, {0.5f, -0.5f, 0.5f}, {0.5f, -0.5f, -0.5f}
     };
-    
-    glNamedBufferStorage(vbo, 3 * sizeof(Vertex), vertices, 0);
+
+    glNamedBufferStorage(vbo, sizeof(vertices), vertices, 0);
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
     glEnableVertexArrayAttrib(vao, 0);
-    glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
     glVertexArrayAttribBinding(vao, 0, 0);
     glBindVertexArray(vao);
 
@@ -67,12 +76,13 @@ int main() {
     shaders.emplace_back(GL_VERTEX_SHADER, "./shaders/shader.vert");
     shaders.emplace_back(GL_FRAGMENT_SHADER, "./shaders/shader.frag");
     ShaderProgram program { shaders };
-    
+
     if (!program.compile()) {
         std::exit(1);
     }
 
     program.use();
+    glEnable(GL_DEPTH_TEST);
 
     bool running { true };
 
@@ -84,10 +94,28 @@ int main() {
             }
         }
 
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        float rotation = SDL_GetTicks() / 10.0f;
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::rotate(trans, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        uint32_t trans_loc = glGetUniformLocation(program.get_id(), "trans");
+        glUniformMatrix4fv(trans_loc, 1, GL_FALSE, glm::value_ptr(trans));
+
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        uint32_t view_loc = glGetUniformLocation(program.get_id(), "view");
+        glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(view));
+
+        glm::mat4 projection;
+        projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
+        uint32_t proj_loc = glGetUniformLocation(program.get_id(), "projection");
+        glUniformMatrix4fv(proj_loc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDrawArrays(GL_TRIANGLES, 0, std::size(vertices));
 
         SDL_GL_SwapWindow(window);
     }

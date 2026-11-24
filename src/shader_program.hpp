@@ -3,7 +3,6 @@
 #include <glad/gl.h>
 
 #include <optional>
-#include <string>
 #include <vector>
 
 #include "shader.hpp"
@@ -27,13 +26,15 @@ public:
     ShaderProgram(const ShaderProgram &other) = delete;
     ShaderProgram &operator=(const ShaderProgram &other) = delete;
 
-    ShaderProgram(ShaderProgram &&other)
+    ShaderProgram(ShaderProgram &&other) noexcept
         : id_(std::exchange(other.id_, 0))
         , shaders_(std::move(other.shaders_))
         , compiled_(std::exchange(other.compiled_, false)) { }
 
     ~ShaderProgram() { glDeleteProgram(id_); }
 
+    uint32_t get_id() const { return id_; }
+    
     std::optional<uint32_t> compile();
     void use();
 };
