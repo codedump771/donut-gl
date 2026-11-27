@@ -5,12 +5,14 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <iterator>
 #include <print>
 
+static constexpr float PI = glm::pi<float>();
+static constexpr float TWO_PI = glm::pi<float>();
 
 struct Vertex {
-    float x, y, z;
+    glm::vec3 pos;
+    glm::vec3 col;
 };
 
 int main() {
@@ -26,7 +28,7 @@ int main() {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     SDL_Window *window = SDL_CreateWindow(
-        "Donut",
+        "OpenGL",
         800,
         800,
         SDL_WINDOW_OPENGL);
@@ -56,20 +58,32 @@ int main() {
     glCreateVertexArrays(1, &vao);
     glCreateBuffers(1, &vbo);
 
-    Vertex vertices[] {
-        {-0.5f, -0.5f, -0.5f}, {0.5f, -0.5f, -0.5f}, {0.0f, 0.5f, 0.0f},
-        {0.5f, -0.5f, -0.5f}, {0.5f, -0.5f, 0.5f}, {0.0f, 0.5f, 0.0f},
-        {0.5f, -0.5f, 0.5f}, {-0.5f, -0.5f, 0.5f}, {0.0f, 0.5f, 0.0f},
-        {-0.5f, -0.5f, 0.5f}, {-0.5f, -0.5f, -0.5f}, {0.0f, 0.5f, 0.0f},
-        {-0.5f, -0.5f, -0.5f}, {-0.5f, -0.5f, 0.5f}, {0.5f, -0.5f, 0.5f},
-        {-0.5f, -0.5f, -0.5f}, {0.5f, -0.5f, 0.5f}, {0.5f, -0.5f, -0.5f}
+    std::vector<Vertex> vertices = {
+        { { -0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f } },
+        { { 0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
+        { { 0.0f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+        { { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
+        { { 0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+        { { 0.0f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+        { { -0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f } },
+        { { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
+        { { 0.0f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+        { { 0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
+        { { 0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+        { { 0.0f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
     };
 
-    glNamedBufferStorage(vbo, sizeof(vertices), vertices, 0);
+    glNamedBufferStorage(vbo, vertices.size() * sizeof(vertices), vertices.data(), 0);
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
-    glEnableVertexArrayAttrib(vao, 0);
-    glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
+
     glVertexArrayAttribBinding(vao, 0, 0);
+    glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, pos));
+    glEnableVertexArrayAttrib(vao, 0);
+
+    glVertexArrayAttribBinding(vao, 1, 0);
+    glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, col));
+    glEnableVertexArrayAttrib(vao, 1);
+
     glBindVertexArray(vao);
 
     Shaders shaders;
@@ -112,10 +126,10 @@ int main() {
         uint32_t proj_loc = glGetUniformLocation(program.get_id(), "projection");
         glUniformMatrix4fv(proj_loc, 1, GL_FALSE, glm::value_ptr(projection));
 
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, std::size(vertices));
+        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
         SDL_GL_SwapWindow(window);
     }

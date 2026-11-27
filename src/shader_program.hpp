@@ -29,7 +29,17 @@ public:
     ShaderProgram(ShaderProgram &&other) noexcept
         : id_(std::exchange(other.id_, 0))
         , shaders_(std::move(other.shaders_))
-        , compiled_(std::exchange(other.compiled_, false)) { }
+        , compiled_(std::exchange(other.compiled_, false)) {}
+ 
+    ShaderProgram& operator=(ShaderProgram&& other) {
+        glDeleteProgram(id_);
+        
+        id_ = std::exchange(other.id_, 0);
+        shaders_ = std::move(other.shaders_);
+        compiled_ = std::exchange(other.compiled_, false);
+
+        return *this;
+    }
 
     ~ShaderProgram() { glDeleteProgram(id_); }
 
