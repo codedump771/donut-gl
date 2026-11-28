@@ -38,9 +38,16 @@ set(SOURCES
     src/main.cpp
     src/io.cpp
     src/shader_program.cpp
+    src/graphics/mesh.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
+
+set(INCLUDE_DIRS 
+    src/graphics
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE src/graphics)
 
 set(GLAD_SOURCE_DIR extern/glad/src)
 set(GLAD_INCLUDE_DIR extern/glad/include)

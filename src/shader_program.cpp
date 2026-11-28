@@ -1,7 +1,7 @@
 #include "shader_program.hpp"
 
 #include <SDL3/SDL.h>
-
+#include <glm/gtc/type_ptr.hpp>
 #include <optional>
 #include <print>
 
@@ -68,4 +68,9 @@ void ShaderProgram::use() {
     } else {
         std::println("[WARNING] Tried to use program before compilation");
     }
+}
+
+void ShaderProgram::add_uniform_Matrix4fv(const glm::mat4 &mat, std::string_view name) {
+    uint32_t loc = glGetUniformLocation(id_, name.data());
+    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mat));
 }

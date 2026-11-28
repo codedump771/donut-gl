@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glad/gl.h>
-
+#include <glm/glm.hpp>
 #include <optional>
 #include <vector>
 
@@ -44,6 +44,8 @@ public:
     ~ShaderProgram() { glDeleteProgram(id_); }
 
     uint32_t get_id() const { return id_; }
+
+    void add_uniform_Matrix4fv(const glm::mat4 &mat, std::string_view name);
     
     std::optional<uint32_t> compile();
     void use();

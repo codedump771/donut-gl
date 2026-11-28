@@ -1,3 +1,4 @@
+#include "mesh.hpp"
 #include "shader_program.hpp"
 #include <SDL3/SDL.h>
 #include <glad/gl.h>
@@ -6,14 +7,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <print>
-
-static constexpr float PI = glm::pi<float>();
-static constexpr float TWO_PI = glm::pi<float>();
-
-struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 col;
-};
 
 int main() {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -58,8 +51,7 @@ int main() {
     glCreateVertexArrays(1, &vao);
     glCreateBuffers(1, &vbo);
 
-    std::vector<Vertex> vertices = {
-        { { -0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f } },
+    Mesh pyramid = Mesh({ { { -0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f } },
         { { 0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
         { { 0.0f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
         { { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
@@ -70,21 +62,9 @@ int main() {
         { { 0.0f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
         { { 0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
         { { 0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
-        { { 0.0f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
-    };
+        { { 0.0f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } } });
 
-    glNamedBufferStorage(vbo, vertices.size() * sizeof(vertices), vertices.data(), 0);
-    glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
-
-    glVertexArrayAttribBinding(vao, 0, 0);
-    glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, pos));
-    glEnableVertexArrayAttrib(vao, 0);
-
-    glVertexArrayAttribBinding(vao, 1, 0);
-    glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, col));
-    glEnableVertexArrayAttrib(vao, 1);
-
-    glBindVertexArray(vao);
+    pyramid.bind();
 
     Shaders shaders;
     shaders.emplace_back(GL_VERTEX_SHADER, "./shaders/shader.vert");
@@ -112,24 +92,20 @@ int main() {
 
         glm::mat4 trans = glm::mat4(1.0f);
         trans = glm::rotate(trans, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-
-        uint32_t trans_loc = glGetUniformLocation(program.get_id(), "trans");
-        glUniformMatrix4fv(trans_loc, 1, GL_FALSE, glm::value_ptr(trans));
+        program.add_uniform_Matrix4fv(trans, "trans");
 
         glm::mat4 view = glm::mat4(1.0f);
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        uint32_t view_loc = glGetUniformLocation(program.get_id(), "view");
-        glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(view));
+        program.add_uniform_Matrix4fv(view, "view");
 
         glm::mat4 projection;
         projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
-        uint32_t proj_loc = glGetUniformLocation(program.get_id(), "projection");
-        glUniformMatrix4fv(proj_loc, 1, GL_FALSE, glm::value_ptr(projection));
+        program.add_uniform_Matrix4fv(projection, "projection");
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+        pyramid.draw();
 
         SDL_GL_SwapWindow(window);
     }
